@@ -39,7 +39,7 @@ class GamePanel extends JPanel implements MouseListener {
 	private boolean turn;
 	private boolean inputEnabled;
 	private final boolean humanPlayerOne;
-        public Othello othello;
+	public Othello othello;
 
 	public GamePanel(Decider computerPlayer, OthelloState board, boolean computerStart) {
 		this.board = board;
@@ -64,16 +64,15 @@ class GamePanel extends JPanel implements MouseListener {
 	}
 
 	protected void drawPanel(Graphics g) {
+		// 每次重新画整个棋盘
 		// int currentWidth = getWidth();
 		// int currentHeight = getHeight();
 		for (int i = 1; i < 8; i++) {
-			g.drawLine(i *  Square_L, 0, i *  Square_L,
-					 Height);
+			g.drawLine(i *  Square_L, 0, i *  Square_L, Height);
 		}
 		g.drawLine(Width, 0, Width, Height);
 		for (int i = 1; i < 8; i++) {
-			g.drawLine(0, i *  Square_L,  Width, i
-					*  Square_L);
+			g.drawLine(0, i *  Square_L,  Width, i *  Square_L);
 		}
 		g.drawLine(0,  Height,  Width,  Height);
 		//System.out.println("Redrawing board\n" + board);
@@ -111,13 +110,13 @@ class GamePanel extends JPanel implements MouseListener {
 			byte j = (byte) (e.getX() /  Square_L);
 			byte i = (byte) (e.getY() /  Square_L);
 			OthelloAction a = new OthelloAction(humanPlayerOne, (byte) i, (byte) j);
-                        // lastAction = a;
+			// lastAction = a;
 			if (a.validOn(board)) {
 				try {
 					board = a.applyTo(board);
-                                        board.getSpotAsChar(i, i);
+					board.getSpotAsChar(i, i);
 					inputEnabled = false;
-                                        updateScores();                                    
+					updateScores();
 				} catch (InvalidActionException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -132,8 +131,7 @@ class GamePanel extends JPanel implements MouseListener {
 				javax.swing.SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						Cursor savedCursor = getCursor();
-						setCursor(Cursor
-								.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						computerMove();
 						setCursor(savedCursor);
 					}
@@ -179,26 +177,26 @@ class GamePanel extends JPanel implements MouseListener {
 		
 		
 		// Next person's turn
-		this.turn = !this.turn;
+		this.turn = !this.turn;//useless
 		inputEnabled = true;
-                updateScores();
+		updateScores();
 		System.gc();
                 
-                if (board.getStatus() != Status.Ongoing) {
+		if (board.getStatus() != Status.Ongoing) {
 			showWinner();
 			return;
 		}		
 	}
 
 	private void showWinner() {
-            int scores[] = board.getScores();
-            if( scores[0] == scores[1] ){
-                JOptionPane.showMessageDialog(this, "A Draw Game", "Reversi", JOptionPane.PLAIN_MESSAGE);
-            }else if( ((scores[1] > scores[0]) && humanPlayerOne) || ((scores[0] > scores[1]) && !humanPlayerOne)) {
-                JOptionPane.showMessageDialog(this, "You Win", "Reversi", JOptionPane.PLAIN_MESSAGE);
-            }else{
-                JOptionPane.showMessageDialog(this, "Computer Win", "Reversi", JOptionPane.PLAIN_MESSAGE);
-            }
+		int scores[] = board.getScores();
+		if (scores[0] == scores[1]) {
+			JOptionPane.showMessageDialog(this, "A Draw Game", "Reversi", JOptionPane.PLAIN_MESSAGE);
+		} else if (((scores[1] > scores[0]) && humanPlayerOne) || ((scores[0] > scores[1]) && !humanPlayerOne)) {
+			JOptionPane.showMessageDialog(this, "You Win", "Reversi", JOptionPane.PLAIN_MESSAGE);
+		} else {
+			JOptionPane.showMessageDialog(this, "Computer Win", "Reversi", JOptionPane.PLAIN_MESSAGE);
+		}
 	}
 
 	@Override
@@ -225,11 +223,11 @@ class GamePanel extends JPanel implements MouseListener {
 
 	}
 
-        private void updateScores() {
-            int[] scores=board.getScores();
-            othello.score_white.setText(scores[0]+"");
-            othello.score_black.setText(scores[1]+"");
-        }
+	private void updateScores() {
+		int[] scores = board.getScores();
+		othello.score_white.setText(scores[0] + "");
+		othello.score_black.setText(scores[1] + "");
+	}
 
 }
 
@@ -294,8 +292,7 @@ public class Othello extends JFrame {
 		gamePanel = new GamePanel(new MiniMaxDecider(computerIsMaximizer, maxDepth), start, computerMovesFirst);
 		//gamePanel = new GamePanel(new MTDDecider(computerIsMaximizer, nummilli, 64), start, computerMovesFirst);
 		
-		gamePanel.setMinimumSize(new Dimension( Width,
-				 Height));
+		gamePanel.setMinimumSize(new Dimension( Width, Height));
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -309,7 +306,7 @@ public class Othello extends JFrame {
 
 		splitPane.setOneTouchExpandable(false);
 		getContentPane().add(splitPane);
-                gamePanel.othello = this; 
+		gamePanel.othello = this;
 
 		pack();
 		setVisible(true);
@@ -325,7 +322,7 @@ public class Othello extends JFrame {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// 0 - Human plays first, 1000ms - time for computer decision (for MTDDecider)
-				Othello frame = new Othello(0, 1000, 2);
+				Othello frame = new Othello(0, 1000, 8);
 			}
 		});
 

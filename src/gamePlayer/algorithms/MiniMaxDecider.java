@@ -61,7 +61,9 @@ public class MiniMaxDecider implements Decider {
 			try {
 				// Algorithm!
 				State newState = action.applyTo(state);
-				float newValue = this.miniMaxRecursor(newState, 1, !this.maximize);
+				//float newValue = this.miniMaxRecursor(newState, 1, !this.maximize);
+				float newValue = this.miniMaxRecursorWithAlphaBetaPruning(newState, Float.NEGATIVE_INFINITY ,
+						Float.POSITIVE_INFINITY,1, !this.maximize);
 				// Better candidates?
 				if (flag * newValue > flag * value) {
 					value = newValue;
@@ -82,8 +84,6 @@ public class MiniMaxDecider implements Decider {
 	 * The true implementation of the MiniMax algorithm!
 	 * Thoroughly commented for your convenience.
 	 * @param state    The State we are currently parsing.
-	 * @param alpha    The alpha bound for alpha-beta pruning.
-	 * @param beta     The beta bound for alpha-beta pruning.
 	 * @param depth    The current depth we are at.
 	 * @param maximize Are we maximizing? If not, we are minimizing.
 	 * @return The best point count we can get on this branch of the state space to the specified depth.
@@ -92,16 +92,16 @@ public class MiniMaxDecider implements Decider {
 	public float miniMaxRecursor(State state, int depth, boolean maximize) {
 		// Has this state already been computed?
 		if (computedStates.containsKey(state)) 
-                    // Return the stored result
-                    return computedStates.get(state);
+			// Return the stored result
+			return computedStates.get(state);
 		// Is this state done?
 		if (state.getStatus() != Status.Ongoing)
-                    // Store and return
-                    return finalize(state, state.heuristic());
+			// Store and return
+			return finalize(state, state.heuristic());
 		// Have we reached the end of the line?
 		if (depth == this.depth)
-                    //Return the heuristic value
-                    return state.heuristic();
+			//Return the heuristic value
+			return state.heuristic();
                 
 		// If not, recurse further. Identify the best actions to take.
 		float value = maximize ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
@@ -113,15 +113,60 @@ public class MiniMaxDecider implements Decider {
 				State childState = action.applyTo(state);
 				float newValue = this.miniMaxRecursor(childState, depth + 1, !maximize);
 				//Record the best value
-                                if (flag * newValue > flag * value) 
-                                    value = newValue;
+				if (flag * newValue > flag * value)
+					value = newValue;
 			} catch (InvalidActionException e) {
-                                //Should not go here
+				//Should not go here
 				throw new RuntimeException("Invalid action!");
 			}
 		}
 		// Store so we don't have to compute it again.
 		return finalize(state, value);
+	}
+
+	/**
+	 * The true implementation of the MiniMax algorithm!
+	 * Thoroughly commented for your convenience.
+	 * @param state    The State we are currently parsing.
+	 * @param alpha    The alpha bound for alpha-beta pruning.
+	 * @param beta     The beta bound for alpha-beta pruning.
+	 * @param depth    The current depth we are at.
+	 * @param maximize Are we maximizing? If not, we are minimizing.
+	 * @return The best point count we can get on this branch of the state space to the specified depth.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public float miniMaxRecursorWithAlphaBetaPruning(State state, float alpha,float beta, int depth, boolean maximize) {
+		if (computedStates.containsKey(state))
+			return computedStates.get(state);
+		if (state.getStatus() != Status.Ongoing||depth == this.depth)
+			return state.heuristic();
+
+		// If not, recurse further. Identify the best actions to take.
+		float value = maximize ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+		int flag = maximize ? 1 : -1;
+		List<Action> test = state.getActions();
+		for (Action action : test) {
+			try {
+				State childState = action.applyTo(state);
+				float newValue = this.miniMaxRecursorWithAlphaBetaPruning(childState, alpha, beta,depth + 1, !maximize);
+				//Record the best value
+				if (flag * newValue > flag * value)
+					value = newValue;
+				//pruning here
+				if(maximize){
+					if(value>=beta) return value;
+					if(value>alpha) alpha=value;
+				}else{
+					if(value<=alpha) return value;
+					if(value<beta) beta=value;
+				}
+			} catch (InvalidActionException e) {
+				//Should not go here
+				throw new RuntimeException("Invalid action!");
+			}
+		}
+
+		return value;
 	}
 	
 	/**
