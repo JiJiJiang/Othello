@@ -30,6 +30,9 @@ public class MiniMaxDecider implements Decider {
 	private Map<State, Float> computedStates;
 	// Used to generate a graph of the search space for each turn in SVG format
 	private static final boolean DEBUG = true;
+
+	//alpha-beta pruning switch
+	boolean alphaBetaPruningSwitch=false;
 	
 	/**
 	 * Initialize this MiniMaxDecider. 
@@ -57,13 +60,16 @@ public class MiniMaxDecider implements Decider {
 		List<Action> bestActions = new ArrayList<Action>();
 		// Iterate!
 		int flag = maximize ? 1 : -1;
+		// for alpha-beta pruning
+		float alpha=Float.NEGATIVE_INFINITY;
+		float beta=Float.POSITIVE_INFINITY;
 		for (Action action : state.getActions()) {
 			try {
 				// Algorithm!
 				State newState = action.applyTo(state);
-				//float newValue = this.miniMaxRecursor(newState, 1, !this.maximize);
-				float newValue = this.miniMaxRecursorWithAlphaBetaPruning(newState, Float.NEGATIVE_INFINITY ,
-						Float.POSITIVE_INFINITY,1, !this.maximize);
+				float newValue = ( alphaBetaPruningSwitch
+						? this.miniMaxRecursorWithAlphaBetaPruning(newState, alpha , beta,1, !this.maximize)
+						: this.miniMaxRecursor(newState, 1, !this.maximize) );
 				// Better candidates?
 				if (flag * newValue > flag * value) {
 					value = newValue;
@@ -71,12 +77,25 @@ public class MiniMaxDecider implements Decider {
 				}
 				// Add it to the list of candidates?
 				if (flag * newValue >= flag * value) bestActions.add(action);
+
+				//*
+				if(alphaBetaPruningSwitch) {
+					//pruning here
+					System.out.println("alpha-beta pruning.");
+					if (maximize) {
+						if (value > alpha) alpha = value;
+					} else {
+						if (value < beta) beta = value;
+					}
+				}
+				//*/
 			} catch (InvalidActionException e) {
 				throw new RuntimeException("Invalid action!");
 			}
 		}
 		// If there are more than one best actions, pick one of the best randomly
 		Collections.shuffle(bestActions);
+		System.out.println(bestActions.size());
 		return bestActions.get(0);
 	}
 	
@@ -135,7 +154,7 @@ public class MiniMaxDecider implements Decider {
 	 * @return The best point count we can get on this branch of the state space to the specified depth.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public float miniMaxRecursorWithAlphaBetaPruning(State state, float alpha,float beta, int depth, boolean maximize) {
+	public float miniMaxRecursorWithAlphaBetaPruning(State state, float alpha, float beta, int depth, boolean maximize) {
 		if (computedStates.containsKey(state))
 			return computedStates.get(state);
 		if (state.getStatus() != Status.Ongoing||depth == this.depth)
@@ -154,10 +173,10 @@ public class MiniMaxDecider implements Decider {
 					value = newValue;
 				//pruning here
 				if(maximize){
-					if(value>=beta) return value;
+					if(value>beta) return value;
 					if(value>alpha) alpha=value;
 				}else{
-					if(value<=alpha) return value;
+					if(value<alpha) return value;
 					if(value<beta) beta=value;
 				}
 			} catch (InvalidActionException e) {
