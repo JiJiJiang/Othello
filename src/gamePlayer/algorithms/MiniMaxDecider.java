@@ -32,7 +32,7 @@ public class MiniMaxDecider implements Decider {
 	private static final boolean DEBUG = true;
 
 	//alpha-beta pruning switch
-	boolean alphaBetaPruningSwitch=false;
+	boolean alphaBetaPruningSwitch=true;//false
 	
 	/**
 	 * Initialize this MiniMaxDecider. 

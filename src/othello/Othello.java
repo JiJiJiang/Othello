@@ -110,6 +110,7 @@ class GamePanel extends JPanel implements MouseListener {
 			byte j = (byte) (e.getX() /  Square_L);
 			byte i = (byte) (e.getY() /  Square_L);
 			OthelloAction a = new OthelloAction(humanPlayerOne, (byte) i, (byte) j);
+			a=(OthelloAction) new MiniMaxDecider(false, 7).decide(board);
 			// lastAction = a;
 			if (a.validOn(board)) {
 				try {
@@ -325,7 +326,11 @@ public class Othello extends JFrame {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// 0 - Human plays first, 1000ms - time for computer decision (for MTDDecider)
-				Othello frame = new Othello(0, 1000, 6);
+				Othello frame = new Othello(1, 1000, 7);
+				//原始：25:39,43:21,28:36,25:39,28:36,27:37，27:37(与上局相同)
+				//2:2: 39:25,40:24,41:23
+				//2:1: 27:37,39:25,49:15,42:22,42:22,25:39,45:19
+				//1:2: 26:38,28:36,46:18,40:24,50:14,50:14(与上局相同),46:18
 			}
 		});
 

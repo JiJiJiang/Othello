@@ -116,7 +116,7 @@ public class OthelloState implements State {
 	public char getSpotAsChar(byte x, byte y) {
 		byte spot = getSpotOnLine(hBoard[x], y);
 		if (spot == 0) return ' ';
-		return spot == 2 ? 'O' : 'X';
+		return spot == 2 ? 'O' : 'X';//'X':white,'O':black
 	}
 	
 	/**
@@ -663,23 +663,23 @@ public class OthelloState implements State {
 		return state;
 	}
         
-        /**
-         * Get the number of checks for the two players
-         * @return scores as int[2]
-         */
-        public int[] getScores(){
-            int scores[] = new int[2];
-            scores[0] = scores[1] = 0;
-                for(byte j=0; j<dimension; j++){
-                    short hb = hBoard[j];
-                    for(byte i=0; i<dimension; i++){
-                        byte spot = getSpotOnLine(hb, i);
-                        if( spot==3 )scores[0] ++;
-                        else if( spot==2 ) scores[1] ++;
-                    }
-                }
-            return scores;
-        }
+	/**
+	 * Get the number of checks for the two players
+	 * @return scores as int[2]
+	 */
+	public int[] getScores() {
+		int scores[] = new int[2];
+		scores[0] = scores[1] = 0;
+		for (byte j = 0; j < dimension; j++) {
+			short hb = hBoard[j];
+			for (byte i = 0; i < dimension; i++) {
+				byte spot = getSpotOnLine(hb, i);
+				if (spot == 3) scores[0]++;
+				else if (spot == 2) scores[1]++;
+			}
+		}
+		return scores;
+	}
 	
 	/**
 	 * Get the stability metric for a particular board.
@@ -694,6 +694,7 @@ public class OthelloState implements State {
 	
 	/**
 	 * Returns the difference between the stability metric for player 1 and player 2.
+	 * 稳定子的数目
 	 * @return The difference between the stability metric for player 1 and player 2
 	 */
 	private float stabilityDifferential() {
@@ -705,6 +706,7 @@ public class OthelloState implements State {
 	
 	/**
 	 * Returns the difference between player 1 and player 2's total piece count.
+	 * 棋子的数目
 	 * @return The difference between player 1 and player 2's total piece count.
 	 */
 	private float pieceDifferential() {
@@ -715,6 +717,7 @@ public class OthelloState implements State {
 	
 	/**
 	 * Returns the difference between the amount of moves player one and player two have available.
+	 * 行动力大小
 	 * @return the difference between the amount of moves player one and player two have available.
 	 */
 	private float moveDifferential() {
@@ -726,6 +729,7 @@ public class OthelloState implements State {
 	
 	/**
 	 * Get the difference between the number of corners player 1 and player 2 occupy.
+	 * 四个角落
 	 * @return The aforementioned difference.
 	 */
 	private float cornerDifferential() {
@@ -744,23 +748,28 @@ public class OthelloState implements State {
 	public float heuristic() {
 		//System.out.printf("%f %f %f %f\n",this.pieceDifferential(), this.moveDifferential(), this.cornerDifferential(), this.stabilityDifferential());
 		Status s = this.getStatus();
-		int winconstant = 0;
+		int winConstant = 0;
 		switch (s) {
 		case PlayerOneWon:
-			winconstant = 5000;
+			winConstant = 5000;
 			break;
 		case PlayerTwoWon:
-			winconstant = -5000;
+			winConstant = -5000;
 			break;
 		default:
-			winconstant = 0;
+			winConstant = 0;
 			break;
 		}
+		/*
+		 * 权重比例：
+		 * 棋子数目 ：行动力 ：4个角落数目 ：稳定子数目 =
+		 *    1 : 8 : 300 : 1
+		 */
 		return this.pieceDifferential() +
 		   8 * this.moveDifferential() +
 		  300 * this.cornerDifferential() +
-		   1 * this.stabilityDifferential() + 
-		   winconstant;
+		   1 * this.stabilityDifferential() +
+		   winConstant;
 	}
 	
 	/** {@inheritDoc} */
