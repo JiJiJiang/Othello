@@ -106,11 +106,10 @@ class GamePanel extends JPanel implements MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (inputEnabled) {
-			byte j = (byte) (e.getX() /  Square_L);
-			byte i = (byte) (e.getY() /  Square_L);
+		if (!computerVsComputer&&inputEnabled) {
+			byte j = (byte) (e.getX() / Square_L);
+			byte i = (byte) (e.getY() / Square_L);
 			OthelloAction a = new OthelloAction(humanPlayerOne, (byte) i, (byte) j);
-			a=(OthelloAction) new MiniMaxDecider(false, 7).decide(board);
 			// lastAction = a;
 			if (a.validOn(board)) {
 				try {
@@ -166,7 +165,7 @@ class GamePanel extends JPanel implements MouseListener {
 			repaint();
 			actions = board.getActions();
 			System.out.println("Finished with computer move\n");
-			isPass = (actions.size() == 1 && ((OthelloAction)actions.get(0)).isPass());
+			isPass = (actions.size() == 1 && ((OthelloAction) actions.get(0)).isPass());
 			if (isPass) {
 				try {
 					board = (OthelloState) actions.get(0).applyTo(board);
@@ -178,18 +177,47 @@ class GamePanel extends JPanel implements MouseListener {
 				repaint();
 			}
 		} while (isPass && board.getStatus() == Status.Ongoing);
-		
-		
+
+
 		// Next person's turn
 		this.turn = !this.turn;//useless
 		inputEnabled = true;
 		updateScores();
 		System.gc();
-                
+
 		if (board.getStatus() != Status.Ongoing) {
 			showWinner();
 			return;
-		}		
+		}
+
+		if(computerVsComputer) secondComputerMove();
+	}
+
+	private boolean computerVsComputer=true;
+	public void secondComputerMove(){
+		//Decider
+		OthelloAction a = (OthelloAction) new MiniMaxDecider(false, 7).decide(board);
+		if (a.validOn(board)) {
+			try {
+				board = a.applyTo(board);
+				inputEnabled = false;
+				updateScores();
+			} catch (InvalidActionException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			repaint();
+			javax.swing.SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					Cursor savedCursor = getCursor();
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					computerMove();
+					setCursor(savedCursor);
+				}
+			});
+		} else
+			JOptionPane.showMessageDialog(this, "Illegal move", "Reversi",
+					JOptionPane.ERROR_MESSAGE);
 	}
 
 	private void showWinner() {
@@ -206,7 +234,6 @@ class GamePanel extends JPanel implements MouseListener {
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -218,13 +245,11 @@ class GamePanel extends JPanel implements MouseListener {
 	@Override
 	public void mousePressed(MouseEvent arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	private void updateScores() {
@@ -326,7 +351,7 @@ public class Othello extends JFrame {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// 0 - Human plays first, 1000ms - time for computer decision (for MTDDecider)
-				Othello frame = new Othello(1, 1000, 7);
+				Othello frame = new Othello(1, 1000, 3);
 				//原始：25:39,43:21,28:36,25:39,28:36,27:37，27:37(与上局相同)
 				//2:2: 39:25,40:24,41:23
 				//2:1: 27:37,39:25,49:15,42:22,42:22,25:39,45:19
