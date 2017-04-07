@@ -143,6 +143,8 @@ class GamePanel extends JPanel implements MouseListener {
 	}
 
 	public void computerMove() {
+		if(computerVsComputer) OthelloState.maximizer=true;//开关赋值
+
 		if (board.getStatus() != Status.Ongoing) {
 			showWinner();
 			return;
@@ -190,11 +192,14 @@ class GamePanel extends JPanel implements MouseListener {
 			return;
 		}
 
+		//System.out.printf("%04x\n",board.dBoard1[7]);
+		//System.out.printf("%04x\n",board.dBoard2[7]);
 		if(computerVsComputer) secondComputerMove();
 	}
 
-	private boolean computerVsComputer=true;
+	private static boolean computerVsComputer=true;
 	public void secondComputerMove(){
+		OthelloState.maximizer=false;//开关赋值
 		//Decider
 		OthelloAction a = (OthelloAction) new MiniMaxDecider(false, 7).decide(board);
 		if (a.validOn(board)) {
@@ -318,9 +323,9 @@ public class Othello extends JFrame {
 		boolean computerIsMaximizer = (whichPlayer == 1);
 		boolean computerMovesFirst = computerIsMaximizer;
 		
-		gamePanel = new GamePanel(new MiniMaxDecider(computerIsMaximizer, maxDepth), start, computerMovesFirst);
-		//gamePanel = new GamePanel(new MTDDecider(computerIsMaximizer, nummilli, 64), start, computerMovesFirst);
-		
+		//gamePanel = new GamePanel(new MiniMaxDecider(computerIsMaximizer, maxDepth), start, computerMovesFirst);
+		gamePanel = new GamePanel(new MTDDecider(computerIsMaximizer, nummilli, 64), start, computerMovesFirst);
+
 		gamePanel.setMinimumSize(new Dimension( Width, Height));
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -351,11 +356,16 @@ public class Othello extends JFrame {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// 0 - Human plays first, 1000ms - time for computer decision (for MTDDecider)
-				Othello frame = new Othello(1, 1000, 3);
-				//原始：25:39,43:21,28:36,25:39,28:36,27:37，27:37(与上局相同)
-				//2:2: 39:25,40:24,41:23
-				//2:1: 27:37,39:25,49:15,42:22,42:22,25:39,45:19
-				//1:2: 26:38,28:36,46:18,40:24,50:14,50:14(与上局相同),46:18
+				Othello frame = new Othello(1, 1000, 7);
+				/*稳定子权重比：对局结果*/
+				//1:1 ：25:39,43:21,28:36,25:39,28:36,27:37,27:37,20:44,31:33,5:59,13:51,30:34,25:39,27:37,18:46   (1:14)
+				//2:2 : 39:25,40:24,41:23,39:25,27:37,29:35,40:24,26:38,20:44,20:44,26:38,26:38,52:12,26:38,40:24  (7:8)
+				//2:1 : 27:37,39:25,49:15,42:22,42:22,25:39,45:19,25:39,45:19,5:59,25:39,38:26,42:22,45:19,36:28   (10:5)
+				//1:2 : 26:38,28:36,46:18,40:24,50:14,50:14,46:18,36:28,26:38,20:44,36:28,47:17,47:17,41:23,46:18  (11:4)
+				//加上星位启发式函数：
+				//2:0 : 38:26,41:23,25:39,43:21,39:25,27:37,47:17,42:22,28:36,50:14,25:39,44:20,27:37,43:21,25:39  (9:6)
+				//0:2 : 27:37,18:46,14:50,27:37,19:45,25:39,20:44,48:16,25:39,27:37,27:37,27:37,18:46,27:37,27:37  (1:14)
+				//		30:34,29:35,51:13,23:41,29:35,39:25,39:25,29:35,26:38,38:26,33:31,16:48,26:38,41:23,32:32  (6:8)
 			}
 		});
 

@@ -81,7 +81,7 @@ public class MiniMaxDecider implements Decider {
 				//*
 				if(alphaBetaPruningSwitch) {
 					//pruning here
-					System.out.println("alpha-beta pruning.");
+					//System.out.println("alpha-beta pruning.");
 					if (maximize) {
 						if (value > alpha) alpha = value;
 					} else {
@@ -95,7 +95,7 @@ public class MiniMaxDecider implements Decider {
 		}
 		// If there are more than one best actions, pick one of the best randomly
 		Collections.shuffle(bestActions);
-		System.out.println(bestActions.size());
+		//System.out.println(bestActions.size());
 		return bestActions.get(0);
 	}
 	

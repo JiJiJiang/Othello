@@ -739,13 +739,53 @@ public class OthelloState implements State {
 		corners[1] = getSpotOnLine(hBoard[0], (byte)(dimension - 1));
 		corners[2] = getSpotOnLine(hBoard[dimension - 1], (byte)0);
 		corners[3] = getSpotOnLine(hBoard[dimension - 1], (byte)(dimension - 1));
+		//System.out.printf("%04x\n",dBoard1[dimension-1]);
+		//System.out.printf("%04x\n",dBoard2[dimension-1]);
 		for (short corner : corners) if (corner != 0) diff += corner == 2 ? 1 : -1;
 		return diff;
 	}
-	
+
+	/**
+	 * Get the difference between the number of 4 X-squares player 1 and player 2 occupy.
+	 * 四个星位
+	 * @return the The aforementioned difference.
+	 */
+	private float X_squareDifferential(){
+		float diff = 0;
+		short[] corners = new short[4];
+		corners[0] = getSpotOnLine(hBoard[0], (byte)0);
+		corners[1] = getSpotOnLine(hBoard[0], (byte)(dimension - 1));
+		corners[2] = getSpotOnLine(hBoard[dimension - 1], (byte)0);
+		corners[3] = getSpotOnLine(hBoard[dimension - 1], (byte)(dimension - 1));
+		short[] X_squares = new short[4];
+		X_squares[0] = getSpotOnLine(hBoard[1], (byte)1);
+		X_squares[1] = getSpotOnLine(hBoard[1], (byte)(dimension - 2));
+		X_squares[2] = getSpotOnLine(hBoard[dimension - 2], (byte)1);
+		X_squares[3] = getSpotOnLine(hBoard[dimension - 2], (byte)(dimension - 2));
+
+		short dBoard1LongestSlant=dBoard1[dimension-1];
+		short dBoard2LongestSlant=dBoard2[dimension-1];
+		short[] blackMasks={(short)0xaaa8,(short)0x2aaa,(short)0xaaa8,(short)0x2aaa};
+		short[] whiteMasks={(short)0xfffc,(short)0x3fff,(short)0xfffc,(short)0x3fff};
+
+		for (int i=0;i<4;i++){
+			if(X_squares[i]==2){
+				if(corners[i]==0&&blackMasks[i]!=dBoard2LongestSlant)
+					diff-=1;
+			}else if(X_squares[i]==3){
+				if(corners[i]==0&&whiteMasks[i]!=dBoard1LongestSlant)
+					diff+=1;
+			}
+		}
+		return diff;
+	}
+
+	/*use for heuristic func*/
+	public static boolean maximizer=false;
 	/** {@inheritDoc} */
 	@Override
 	public float heuristic() {
+		//System.out.println(maximizer?"maximizer":"minimizer");
 		//System.out.printf("%f %f %f %f\n",this.pieceDifferential(), this.moveDifferential(), this.cornerDifferential(), this.stabilityDifferential());
 		Status s = this.getStatus();
 		int winConstant = 0;
@@ -768,7 +808,8 @@ public class OthelloState implements State {
 		return this.pieceDifferential() +
 		   8 * this.moveDifferential() +
 		  300 * this.cornerDifferential() +
-		   1 * this.stabilityDifferential() +
+				(maximizer?1:1) * this.stabilityDifferential() +
+				(maximizer?0:2) * this.X_squareDifferential() +
 		   winConstant;
 	}
 	
