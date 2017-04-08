@@ -30,7 +30,6 @@ public class MTDDecider implements Decider {
 		EntryType type;
 		int value;
 		int depth;
-
 	}
 	
 	// Helper class for storing several items in the transposition table
@@ -38,7 +37,6 @@ public class MTDDecider implements Decider {
 		int searchDepth;
 		int timeSpent;
 		int nodesEvaluated;
-
 	}
 
 	// These are easier to see than maxint and minint
